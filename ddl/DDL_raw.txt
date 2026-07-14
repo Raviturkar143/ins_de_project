@@ -1,0 +1,436 @@
+---DDL-01 : PRODUCT_MASTER
+CREATE TABLE PRODUCT_MASTER
+(
+    product_id            NUMBER(5)       NOT NULL,
+    product_code          VARCHAR2(20)    NOT NULL,
+    product_name          VARCHAR2(100)   NOT NULL,
+    product_category      VARCHAR2(50)    NOT NULL,
+    policy_term_years     NUMBER(2)       NOT NULL,
+    premium_frequency     VARCHAR2(20)    NOT NULL,
+    product_status        VARCHAR2(20)    DEFAULT 'ACTIVE' NOT NULL,
+
+    created_date          DATE            DEFAULT SYSDATE,
+    created_by            VARCHAR2(30)    DEFAULT 'SYSTEM',
+
+    updated_date          DATE,
+    updated_by            VARCHAR2(30),
+
+    CONSTRAINT pk_product_master
+        PRIMARY KEY (product_id),
+
+    CONSTRAINT uk_product_code
+        UNIQUE (product_code),
+
+    CONSTRAINT chk_product_status
+        CHECK (product_status IN ('ACTIVE','INACTIVE')),
+
+    CONSTRAINT chk_premium_frequency
+        CHECK (premium_frequency IN
+            ('MONTHLY',
+             'QUARTERLY',
+             'HALF_YEARLY',
+             'YEARLY',
+             'SINGLE'))
+);
+
+--DDL-02 : PRODUCT_COMMISSION_RULE
+
+CREATE TABLE PRODUCT_COMMISSION_RULE
+(
+    commission_rule_id     NUMBER(10)      NOT NULL,
+
+    product_id             NUMBER(5)       NOT NULL,
+
+    first_year_pct         NUMBER(5,2)     NOT NULL,
+
+    renewal_pct            NUMBER(5,2)     NOT NULL,
+
+    effective_from         DATE            NOT NULL,
+
+    effective_to           DATE,
+
+    rule_status            VARCHAR2(20)    DEFAULT 'ACTIVE' NOT NULL,
+
+    created_date           DATE            DEFAULT SYSDATE,
+    created_by             VARCHAR2(30)    DEFAULT 'SYSTEM',
+
+    updated_date           DATE,
+    updated_by             VARCHAR2(30),
+
+    CONSTRAINT pk_product_comm_rule
+        PRIMARY KEY (commission_rule_id),
+
+    CONSTRAINT fk_pcr_product
+        FOREIGN KEY (product_id)
+        REFERENCES PRODUCT_MASTER(product_id),
+
+    CONSTRAINT chk_rule_status
+        CHECK (rule_status IN ('ACTIVE','INACTIVE'))
+);
+
+--DDL-03 : CUSTOMER_ROLE_MASTER
+
+CREATE TABLE CUSTOMER_ROLE_MASTER
+(
+    role_id          NUMBER(2)      NOT NULL,
+
+    role_code        VARCHAR2(5)    NOT NULL,
+
+    role_name        VARCHAR2(50)   NOT NULL,
+
+    role_status      VARCHAR2(20)   DEFAULT 'ACTIVE' NOT NULL,
+
+    created_date     DATE           DEFAULT SYSDATE,
+
+    updated_date     DATE,
+
+    CONSTRAINT pk_customer_role
+        PRIMARY KEY (role_id),
+
+    CONSTRAINT uk_customer_role_code
+        UNIQUE(role_code),
+
+    CONSTRAINT chk_customer_role_status
+        CHECK (role_status IN ('ACTIVE','INACTIVE'))
+);
+
+--insert initial data
+INSERT INTO CUSTOMER_ROLE_MASTER VALUES
+(1,'PH','Policy Holder','ACTIVE',SYSDATE,NULL);
+
+INSERT INTO CUSTOMER_ROLE_MASTER VALUES
+(2,'LA','Life Assured','ACTIVE',SYSDATE,NULL);
+
+INSERT INTO CUSTOMER_ROLE_MASTER VALUES
+(3,'NM','Nominee','ACTIVE',SYSDATE,NULL);
+
+INSERT INTO CUSTOMER_ROLE_MASTER VALUES
+(4,'AP','Appointee','ACTIVE',SYSDATE,NULL);
+
+COMMIT;
+
+--DDL-04 CUSTOMER
+CREATE TABLE CUSTOMER
+(
+    customer_no           NUMBER(10)       NOT NULL,
+    source_customer_no    VARCHAR2(30)     NOT NULL,
+
+    customer_type         VARCHAR2(20)     NOT NULL,
+
+    first_name            VARCHAR2(100),
+    middle_name           VARCHAR2(100),
+    last_name             VARCHAR2(100),
+
+    company_name          VARCHAR2(200),
+
+    dob                   DATE,
+    gender                VARCHAR2(10),
+
+    mobile_no             VARCHAR2(15),
+    email                 VARCHAR2(150),
+
+    national_id           VARCHAR2(25),
+    pan_number            VARCHAR2(15),
+
+    occupation            VARCHAR2(100),
+    annual_income         NUMBER(15,2),
+    marital_status        VARCHAR2(20),
+
+    address_line1         VARCHAR2(250),
+    address_line2         VARCHAR2(250),
+    city                  VARCHAR2(100),
+    state                 VARCHAR2(100),
+    country               VARCHAR2(100),
+    postal_code           VARCHAR2(10),
+
+    kyc_status            VARCHAR2(20),
+
+    customer_status       VARCHAR2(20) DEFAULT 'ACTIVE',
+
+    created_date          DATE DEFAULT SYSDATE,
+    created_by            VARCHAR2(30) DEFAULT 'SYSTEM',
+
+    updated_date          DATE,
+    updated_by            VARCHAR2(30),
+
+    CONSTRAINT pk_customer
+        PRIMARY KEY(customer_no),
+
+    CONSTRAINT uk_source_customer
+        UNIQUE(source_customer_no)
+);
+
+--DDL-05 AGENT
+CREATE TABLE AGENT
+(
+    agent_no              NUMBER(10)       NOT NULL,
+    source_agent_no       VARCHAR2(30)     NOT NULL,
+
+    first_name            VARCHAR2(100),
+    middle_name           VARCHAR2(100),
+    last_name             VARCHAR2(100),
+
+    dob                   DATE,
+    gender                VARCHAR2(10),
+
+    mobile_no             VARCHAR2(15),
+    email                 VARCHAR2(150),
+
+    joining_date          DATE             NOT NULL,
+    termination_date      DATE,
+
+    designation           VARCHAR2(100),
+
+    branch_code           VARCHAR2(20),
+    branch_name           VARCHAR2(100),
+
+    city                  VARCHAR2(100),
+    state                 VARCHAR2(100),
+    country               VARCHAR2(100),
+
+    agent_status          VARCHAR2(20) DEFAULT 'ACTIVE',
+
+    created_date          DATE DEFAULT SYSDATE,
+    created_by            VARCHAR2(30) DEFAULT 'SYSTEM',
+
+    updated_date          DATE,
+    updated_by            VARCHAR2(30),
+
+    CONSTRAINT pk_agent
+        PRIMARY KEY(agent_no),
+
+    CONSTRAINT uk_source_agent
+        UNIQUE(source_agent_no)
+);
+
+
+CREATE TABLE POLICY
+(
+    policy_no              NUMBER(10)      NOT NULL,
+    source_policy_no       VARCHAR2(30)    NOT NULL,
+
+    product_id             NUMBER(5)       NOT NULL,
+
+    policy_start_date      DATE            NOT NULL,
+    policy_end_date        DATE            NOT NULL,
+
+    issue_date             DATE            NOT NULL,
+
+    premium_frequency      VARCHAR2(20),
+
+    premium_amount         NUMBER(15,2),
+
+    sum_assured            NUMBER(15,2),
+
+    policy_term_years      NUMBER(3),
+
+    payment_term_years     NUMBER(3),
+
+    policy_status          VARCHAR2(30) DEFAULT 'ACTIVE',
+
+    created_date           DATE DEFAULT SYSDATE,
+    created_by             VARCHAR2(30) DEFAULT 'SYSTEM',
+
+    updated_date           DATE,
+    updated_by             VARCHAR2(30),
+
+    CONSTRAINT pk_policy
+        PRIMARY KEY(policy_no),
+
+    CONSTRAINT uk_source_policy
+        UNIQUE(source_policy_no),
+
+    CONSTRAINT fk_policy_product
+        FOREIGN KEY(product_id)
+        REFERENCES PRODUCT_MASTER(product_id)
+);
+
+--DDL-06 POLICY
+CREATE TABLE POLICY
+(
+    policy_no              NUMBER(10)      NOT NULL,
+    source_policy_no       VARCHAR2(30)    NOT NULL,
+
+    product_id             NUMBER(5)       NOT NULL,
+
+    policy_start_date      DATE            NOT NULL,
+    policy_end_date        DATE            NOT NULL,
+
+    issue_date             DATE            NOT NULL,
+
+    premium_frequency      VARCHAR2(20),
+
+    premium_amount         NUMBER(15,2),
+
+    sum_assured            NUMBER(15,2),
+
+    policy_term_years      NUMBER(3),
+
+    payment_term_years     NUMBER(3),
+
+    policy_status          VARCHAR2(30) DEFAULT 'ACTIVE',
+
+    created_date           DATE DEFAULT SYSDATE,
+    created_by             VARCHAR2(30) DEFAULT 'SYSTEM',
+
+    updated_date           DATE,
+    updated_by             VARCHAR2(30),
+
+    CONSTRAINT pk_policy
+        PRIMARY KEY(policy_no),
+
+    CONSTRAINT uk_source_policy
+        UNIQUE(source_policy_no),
+
+    CONSTRAINT fk_policy_product
+        FOREIGN KEY(product_id)
+        REFERENCES PRODUCT_MASTER(product_id)
+);
+
+--DDL-07 CUSTOMER_POLICY
+
+CREATE TABLE CUSTOMER_POLICY
+(
+    customer_policy_id     NUMBER(10)      NOT NULL,
+
+    customer_no            NUMBER(10)      NOT NULL,
+
+    policy_no              NUMBER(10)      NOT NULL,
+
+    role_id                NUMBER(2)       NOT NULL,
+
+    effective_from         DATE,
+
+    effective_to           DATE,
+
+    relation_status        VARCHAR2(20) DEFAULT 'ACTIVE',
+
+    created_date           DATE DEFAULT SYSDATE,
+
+    updated_date           DATE,
+
+    CONSTRAINT pk_customer_policy
+        PRIMARY KEY(customer_policy_id),
+
+    CONSTRAINT fk_cp_customer
+        FOREIGN KEY(customer_no)
+        REFERENCES CUSTOMER(customer_no),
+
+    CONSTRAINT fk_cp_policy
+        FOREIGN KEY(policy_no)
+        REFERENCES POLICY(policy_no),
+
+    CONSTRAINT fk_cp_role
+        FOREIGN KEY(role_id)
+        REFERENCES CUSTOMER_ROLE_MASTER(role_id)
+);
+
+--DDL-08 AGENT_POLICY
+
+CREATE TABLE AGENT_POLICY
+(
+    agent_policy_id        NUMBER(10)      NOT NULL,
+
+    agent_no               NUMBER(10)      NOT NULL,
+
+    policy_no              NUMBER(10)      NOT NULL,
+
+    agent_role             VARCHAR2(20),
+
+    allocation_percentage  NUMBER(5,2),
+
+    effective_from         DATE,
+
+    effective_to           DATE,
+
+    relation_status        VARCHAR2(20) DEFAULT 'ACTIVE',
+
+    created_date           DATE DEFAULT SYSDATE,
+
+    updated_date           DATE,
+
+    CONSTRAINT pk_agent_policy
+        PRIMARY KEY(agent_policy_id),
+
+    CONSTRAINT fk_ap_agent
+        FOREIGN KEY(agent_no)
+        REFERENCES AGENT(agent_no),
+
+    CONSTRAINT fk_ap_policy
+        FOREIGN KEY(policy_no)
+        REFERENCES POLICY(policy_no)
+);
+
+--DDL-09 09_MONEY_IN_DTL
+
+CREATE TABLE MONEY_IN_DTL
+(
+    payment_id              NUMBER(12) NOT NULL,
+
+    policy_no               NUMBER(10) NOT NULL,
+
+    installment_no          NUMBER(3),
+
+    payment_type            VARCHAR2(30),
+
+    due_date                DATE,
+
+    payment_date            DATE,
+
+    premium_amount          NUMBER(15,2),
+
+    payment_mode            VARCHAR2(30),
+
+    payment_status          VARCHAR2(20),
+
+    transaction_reference   VARCHAR2(100),
+
+    source_system           VARCHAR2(30),
+
+    batch_id                VARCHAR2(50),
+
+    created_date            DATE DEFAULT SYSDATE,
+
+    created_by              VARCHAR2(30) DEFAULT 'SYSTEM',
+
+    updated_date            DATE,
+
+    updated_by              VARCHAR2(30),
+
+    CONSTRAINT pk_money_in_dtl
+        PRIMARY KEY(payment_id),
+
+    CONSTRAINT fk_mid_policy
+        FOREIGN KEY(policy_no)
+        REFERENCES POLICY(policy_no),
+
+    CONSTRAINT chk_payment_type
+        CHECK(payment_type IN
+        (
+            'FIRST_PREMIUM',
+            'RENEWAL_PREMIUM',
+            'TOPUP'
+        )),
+
+    CONSTRAINT chk_payment_status
+        CHECK(payment_status IN
+        (
+            'PAID',
+            'PENDING',
+            'FAILED',
+            'REFUNDED'
+        ))
+);
+
+CREATE SEQUENCE MONEY_IN_DTL_SEQ
+START WITH 1
+INCREMENT BY 1
+NOCACHE;
+
+--Transaction Tables
+MONEY_IN_DTL
+-- to be created
+MONEY_OUT_DTL
+CLAIM_DTL
+UNIT_HISTORY_DTL
+COMMISSION_PAYOUT_DTL

@@ -1,1 +1,25 @@
- 
+ # Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Generated data
+raw_data/
+*.parquet
+
+# Spark
+spark-warehouse/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
