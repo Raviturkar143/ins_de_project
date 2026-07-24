@@ -1,3 +1,4 @@
+# for local run
 # Record limits
 
 CUSTOMER_COUNT = 1000
