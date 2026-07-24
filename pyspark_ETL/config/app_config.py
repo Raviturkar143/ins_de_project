@@ -8,9 +8,9 @@ Application Configuration
 
  
 
-AWS_REGION = "ap-south-1"
+AWS_REGION = "region"
 
-S3_BUCKET_NAME = "insurance-data-lake-ravi"
+S3_BUCKET_NAME = "S3_bucket_name"
 
 RAW_LAYER = "raw_data"
 
